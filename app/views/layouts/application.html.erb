@@ -11,6 +11,8 @@
   </head>
 
   <body>
-    <%= yield %>
+    <turbo-frame id="main">
+      <%= yield %>
+    </turbo-frame>
   </body>
 </html>

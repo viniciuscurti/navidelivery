@@ -1,0 +1,8 @@
+<turbo-frame id="tracking_status">
+  <h2>Rastreamento da Entrega</h2>
+</turbo-frame>
+<turbo-frame id="tracking_map">
+  <div data-controller="tracking" data-tracking-public-token="<%= @delivery.public_token %>">
+    <div id="map" style="height: 400px;"></div>
+  </div>
+</turbo-frame>
