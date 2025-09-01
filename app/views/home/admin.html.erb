@@ -1,0 +1,9 @@
+<h1>Painel Admin</h1>
+<p>Bem-vindo, <%= current_user.name || current_user.email %>!</p>
+<ul>
+  <li>Email: <%= current_user.email %></li>
+  <li>Nome: <%= current_user.name %></li>
+</ul>
+<%= link_to 'Sair', destroy_user_session_path, method: :delete, class: 'btn btn-secondary' %>
+<%= link_to 'Voltar para Home', root_path, class: 'btn btn-primary' %>
+

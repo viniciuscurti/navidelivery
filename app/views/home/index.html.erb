@@ -1,0 +1,196 @@
+<section class="py-5 py-lg-6 bg-light text-center position-relative overflow-hidden">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h1 class="display-5 fw-bold mb-3">Rastreamento de Entregas em Tempo Real para Restaurantes</h1>
+        <p class="lead mb-4">Reduza chamadas de suporte, aumente o NPS e tenha visibilidade total da operação com links de acompanhamento ao vivo para seus clientes.</p>
+        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+          <% if user_signed_in? %>
+            <%= link_to 'Ir para o Painel', admin_path, class: 'btn btn-primary btn-lg px-4' %>
+            <%= link_to 'Sair', destroy_user_session_path, method: :delete, class: 'btn btn-outline-secondary btn-lg px-4' %>
+          <% else %>
+            <%= link_to 'Começar Agora', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-primary btn-lg px-4' %>
+            <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Ver Funcionalidades</a>
+          <% end %>
+        </div>
+        <p class="text-muted small mt-3 mb-0">Implementação em minutos. Sem trocar seu POS.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-semibold">Funcionalidades Principais</h2>
+      <p class="text-muted mb-0">Tudo que você precisa para controle operacional de entregas.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Link Público de Rastreamento</h5>
+            <p class="card-text small text-muted">Compartilhe com o cliente final um mapa ao vivo sem necessidade de login ou app instalado.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Painel Operacional</h5>
+            <p class="card-text small text-muted">Acompanhe status, atrasos, ociosidade e métricas em um só lugar com atualização em tempo real.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Integração Simples</h5>
+            <p class="card-text small text-muted">Webhooks e exportação CSV para integrar com POS/ERP sem fricção ou projeto longo.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Atualizações em 10–30s</h5>
+            <p class="card-text small text-muted">Precisão configurável usando Hotwire + WebSockets para reduzir consumo de bateria e dados.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">App Leve p/ Motoboy</h5>
+            <p class="card-text small text-muted">Hotwire Native com localização adaptativa, geofencing e fila offline resiliente.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Segurança & LGPD</h5>
+            <p class="card-text small text-muted">Consentimento claro, coleta mínima e expurgo automático de dados de localização.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="metrics" class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-semibold">Resultados que Importam</h2>
+      <p class="text-muted mb-0">Indicadores alvo para seu piloto.</p>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-6 col-md-3">
+        <h3 class="fw-bold display-6 mb-0">-25%</h3>
+        <p class="small text-muted mb-0">Chamadas “cadê meu pedido?”</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <h3 class="fw-bold display-6 mb-0">+10</h3>
+        <p class="small text-muted mb-0">Pontos em NPS final</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <h3 class="fw-bold display-6 mb-0">80%+</h3>
+        <p class="small text-muted mb-0">Links acessados</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <h3 class="fw-bold display-6 mb-0">Minutos</h3>
+        <p class="small text-muted mb-0">Tempo de ativação</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-semibold">Planos Simples</h2>
+      <p class="text-muted">Escale conforme cresce. Sem taxa oculta.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="border rounded h-100 p-4 d-flex flex-column">
+          <h5 class="fw-bold">Start</h5>
+          <p class="small text-muted flex-grow-1">Até 3 motoboys • 1.000 entregas/mês</p>
+          <div class="mb-3 h2">R$ —</div>
+          <% if user_signed_in? %>
+            <%= link_to 'Upgrade', admin_path, class: 'btn btn-outline-primary w-100' %>
+          <% else %>
+            <%= link_to 'Experimentar', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-outline-primary w-100' %>
+          <% end %>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="border rounded h-100 p-4 d-flex flex-column position-relative">
+          <span class="badge bg-primary position-absolute top-0 start-50 translate-middle">Popular</span>
+          <h5 class="fw-bold mt-3">Grow</h5>
+            <p class="small text-muted flex-grow-1">Até 10 motoboys • 5.000 entregas/mês</p>
+          <div class="mb-3 h2">R$ —</div>
+          <% if user_signed_in? %>
+            <%= link_to 'Upgrade', admin_path, class: 'btn btn-primary w-100' %>
+          <% else %>
+            <%= link_to 'Começar', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-primary w-100' %>
+          <% end %>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="border rounded h-100 p-4 d-flex flex-column">
+          <h5 class="fw-bold">Scale</h5>
+          <p class="small text-muted flex-grow-1">Ilimitado + excedente por entrega adicional</p>
+          <div class="mb-3 h2">Sob consulta</div>
+          <a href="#cta" class="btn btn-outline-primary w-100">Falar com vendas</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-semibold">Perguntas Frequentes</h2>
+    </div>
+    <div class="accordion" id="faqAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="q1">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#a1" aria-expanded="true" aria-controls="a1">Preciso trocar meu POS?</button>
+        </h2>
+        <div id="a1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+          <div class="accordion-body small">Não. Você usa criação manual ou integra via Webhooks / CSV conforme evolui.</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="q2">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2" aria-expanded="false" aria-controls="a2">Qual a precisão de localização?</button>
+        </h2>
+        <div id="a2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body small">Atualizações típicas entre 10–30 segundos, adaptando a velocidade e movimento para economizar bateria.</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="q3">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a3" aria-expanded="false" aria-controls="a3">Como tratam privacidade?</button>
+        </h2>
+        <div id="a3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body small">Coletamos somente durante entregas/turno e expurgamos pings brutos após janela configurável.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cta" class="py-5 text-center border-top">
+  <div class="container">
+    <h2 class="fw-semibold mb-3">Pronto para testar?</h2>
+    <p class="text-muted mb-4">Ative em minutos e acompanhe suas primeiras entregas hoje.</p>
+    <% if user_signed_in? %>
+      <%= link_to 'Ir para o Painel', admin_path, class: 'btn btn-primary btn-lg px-4' %>
+    <% else %>
+      <%= link_to 'Entrar com Google', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-primary btn-lg px-4' %>
+    <% end %>
+  </div>
+</section>

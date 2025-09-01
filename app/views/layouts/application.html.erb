@@ -1,18 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
   <head>
-    <title>Navidelivery</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Delivery Tracker – Visibilidade em Tempo Real</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Rastreamento de entregas em tempo real para restaurantes e dark kitchens. Reduza suporte, aumente NPS e tenha controle operacional." />
+    <meta name="theme-color" content="#0d6efd" />
+    <meta property="og:title" content="Delivery Tracker" />
+    <meta property="og:description" content="Links de acompanhamento em tempo real para seus clientes." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="#{request.base_url}" />
+    <meta property="og:image" content="/apple-touch-icon.png" />
+    <link rel="canonical" href="#{request.original_url}" />
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-
-  <body>
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-sm btn-outline-secondary" href="#main-content">Pular para conteúdo</a>
+    <%= render 'shared/navbar' %>
     <turbo-frame id="main">
-      <%= yield %>
+      <main id="main-content" class="flex-grow-1">
+        <%= yield %>
+      </main>
     </turbo-frame>
+    <%= render 'shared/footer' %>
   </body>
 </html>

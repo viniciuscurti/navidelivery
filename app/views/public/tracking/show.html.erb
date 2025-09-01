@@ -1,8 +1,65 @@
-<turbo-frame id="tracking_status">
-  <h2>Rastreamento da Entrega</h2>
-</turbo-frame>
-<turbo-frame id="tracking_map">
-  <div data-controller="tracking" data-tracking-public-token="<%= @delivery.public_token %>">
-    <div id="map" style="height: 400px;"></div>
+<div class="tracking-container" data-controller="tracking" data-tracking-token-value="<%= @delivery.public_token %>">
+  <div class="tracking-header">
+    <h1>Acompanhe seu pedido</h1>
+    <div class="order-info">
+      <span class="order-code">#<%= @delivery.external_order_code %></span>
+      <span class="status status-<%= @delivery.status %>">
+        <%= t("delivery.status.#{@delivery.status}") %>
+      </span>
+    </div>
   </div>
-</turbo-frame>
+
+  <div class="map-container">
+    <div id="map" data-tracking-target="map"
+         data-pickup-lat="<%= @delivery.pickup_lat %>"
+         data-pickup-lng="<%= @delivery.pickup_lng %>"
+         data-dropoff-lat="<%= @delivery.dropoff_lat %>"
+         data-dropoff-lng="<%= @delivery.dropoff_lng %>"
+         <% if @current_location %>
+         data-current-lat="<%= @current_location.lat %>"
+         data-current-lng="<%= @current_location.lng %>"
+         <% end %>>
+    </div>
+  </div>
+
+  <div class="delivery-info">
+    <div class="addresses">
+      <div class="address pickup">
+        <div class="icon">📍</div>
+        <div class="details">
+          <label>Retirada</label>
+          <span><%= @delivery.pickup_address %></span>
+        </div>
+      </div>
+
+      <div class="address dropoff">
+        <div class="icon">🏠</div>
+        <div class="details">
+          <label>Entrega</label>
+          <span><%= @delivery.dropoff_address %></span>
+        </div>
+      </div>
+    </div>
+
+    <% if @estimated_arrival %>
+      <div class="eta">
+        <div class="icon">⏰</div>
+        <div class="details">
+          <label>Previsão de chegada</label>
+          <span data-tracking-target="eta"><%= @estimated_arrival.strftime("%H:%M") %></span>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="status-timeline" data-tracking-target="timeline">
+      <% Delivery::STATUSES.each do |status| %>
+        <div class="timeline-item <%= 'active' if @delivery.status == status || Delivery::STATUSES.index(@delivery.status) > Delivery::STATUSES.index(status) %>">
+          <div class="timeline-dot"></div>
+          <span><%= t("delivery.status.#{status}") %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= turbo_stream_from @delivery %>
