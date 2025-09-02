@@ -26,7 +26,7 @@ module Geospatial
     rm * c
   end
 
-  # Método de módulo para uso direto: Geospatial.distance_between(a, b)
+
   def self.distance_between(coord1, coord2)
     lat1, lng1 = coord1
     lat2, lng2 = coord2

@@ -18,7 +18,7 @@ const STATIC_CACHE_URLS = [
 
 // Cache separado para tiles de mapa
 const MAP_CACHE_NAME = 'navidelivery-map-tiles-v1';
-// Limite de tiles para evitar usar todo o armazenamento
+// Limite de tiles para evitar usar
 const MAX_MAP_TILES = 300;
 
 // Instalação: cache inicial
@@ -62,7 +62,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
   // Estratégia para tiles de mapa: Cache primeiro, depois rede
-  if (url.href.includes('tile.openstreetmap.org') || 
+  if (url.href.includes('tile.openstreetmap.org') ||
       url.href.includes('api.maptiler.com')) {
     event.respondWith(handleMapTile(event.request));
     return;
@@ -128,8 +128,8 @@ async function handleApiRequest(request) {
 
     // Tenta resposta em cache como último recurso
     const cachedResponse = await caches.match(request);
-    return cachedResponse || new Response(JSON.stringify({ 
-      error: 'Você está offline' 
+    return cachedResponse || new Response(JSON.stringify({
+      error: 'Você está offline'
     }), {
       headers: { 'Content-Type': 'application/json' }
     });
