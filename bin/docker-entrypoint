@@ -1,8 +1,8 @@
-#!/bin/bash -e
+#!/bin/sh -e
 
-# If running the rails server then create or migrate existing database
-if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  ./bin/rails db:prepare
+# Se o comando for o servidor Rails, preparar banco
+if [ "$1" = "bundle" ] && [ "$2" = "exec" ] && [ "$3" = "rails" ] && [ "$4" = "server" ]; then
+  bundle exec rails db:prepare
 fi
 
-exec "${@}"
+exec "$@"

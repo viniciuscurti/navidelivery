@@ -30,7 +30,6 @@ Rails.application.routes.draw do
           get :status
         end
       end
-
       resources :couriers, only: [:index, :show] do
         member do
           post :start_shift
@@ -40,11 +39,18 @@ Rails.application.routes.draw do
 
       # Webhooks
       resources :webhook_endpoints, only: [:create, :update, :destroy]
+
+      # API pública para tracking
+      namespace :public do
+        get 'deliveries/:token', to: 'public#delivery'
+        get 'deliveries/:token/status', to: 'public#delivery_status'
+      end
+
+      # Novas rotas públicas de tracking (sem auth)
+      get '/deliveries/track/:token', to: 'tracking#show'
+      get '/deliveries/track/:token/status', to: 'tracking#status'
     end
   end
-
-  # Public tracking
-  get '/track/:token', to: 'public/tracking#show', as: :public_tracking
 
   # WebSocket
   mount ActionCable.server => '/cable'

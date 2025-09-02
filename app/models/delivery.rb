@@ -1,4 +1,7 @@
 class Delivery < ApplicationRecord
+  include Trackable
+  include Geospatial
+
   belongs_to :store
   belongs_to :courier, optional: true
   has_many :location_pings, dependent: :destroy

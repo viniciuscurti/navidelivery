@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d6efd">
+  <title>NaviDelivery • Tracking</title>
+  <link rel="manifest" href="/tracking/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/tracking/images/icon-192.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/tracking/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <h1 class="logo">NaviDelivery</h1>
+      <p class="status-badge" id="statusBadge">Carregando...</p>
+    </header>
+
+    <main class="container-fluid p-0">
+      <div id="map" class="tracking-map"></div>
+
+      <div class="delivery-info card">
+        <div class="card-body">
+          <div id="loading" class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p>Carregando informações...</p>
+          </div>
+
+          <div id="deliveryDetails" class="d-none">
+            <div class="delivery-header">
+              <h2 id="storeName">Carregando...</h2>
+              <p id="orderCode" class="order-code">Pedido #</p>
+            </div>
+
+            <div class="delivery-status-wrapper">
+              <ul class="status-timeline">
+                <li id="statusPreparing" class="status-item">
+                  <div class="status-icon"></div>
+                  <div class="status-text">Preparando</div>
+                </li>
+                <li id="statusReady" class="status-item">
+                  <div class="status-icon"></div>
+                  <div class="status-text">Pronto</div>
+                </li>
+                <li id="statusOnTheWay" class="status-item">
+                  <div class="status-icon"></div>
+                  <div class="status-text">A caminho</div>
+                </li>
+                <li id="statusDelivered" class="status-item">
+                  <div class="status-icon"></div>
+                  <div class="status-text">Entregue</div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="delivery-details">
+              <div class="detail-item">
+                <h3>Endereço de entrega</h3>
+                <p id="deliveryAddress">Carregando...</p>
+              </div>
+
+              <div class="detail-item">
+                <h3>Entregador</h3>
+                <p id="courierName">Carregando...</p>
+              </div>
+
+              <div class="detail-item">
+                <h3>Tempo estimado</h3>
+                <p id="estimatedTime">Calculando...</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="errorMessage" class="alert alert-danger d-none">
+            Erro ao carregar informações de entrega. Por favor, verifique o código de rastreamento.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>© NaviDelivery - Acompanhamento em tempo real</p>
+    </footer>
+  </div>
+
+  <script src="/tracking/app.js"></script>
+  <script>
+    // Registra o service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/tracking/service-worker.js')
+          .then(reg => console.log('Service Worker registrado'))
+          .catch(err => console.log('Erro ao registrar Service Worker', err));
+      });
+    }
+  </script>
+</body>
+</html>

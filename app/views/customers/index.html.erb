@@ -1,0 +1,45 @@
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Clientes</h1>
+    <%= link_to 'Novo cliente', new_customer_path, class: 'btn btn-primary' %>
+  </div>
+
+  <%= form_with url: customers_path, method: :get, local: true, class: "row g-2 mb-3" do |f| %>
+    <div class="col">
+      <%= text_field_tag :q, @q, class: "form-control", placeholder: "Buscar por nome, endereço ou telefone" %>
+    </div>
+    <div class="col-auto">
+      <%= submit_tag "Buscar", class: "btn btn-outline-secondary" %>
+    </div>
+  <% end %>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Endereço</th>
+          <th>CEP</th>
+          <th>Telefone</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @customers.each do |c| %>
+          <tr>
+            <td><%= c.name %></td>
+            <td><%= c.address %></td>
+            <td><%= c.zip_code %></td>
+            <td><%= c.phone %></td>
+            <td class="text-end">
+              <%= link_to 'Ver', c, class: 'btn btn-sm btn-outline-primary' %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @customers.empty? %>
+          <tr><td colspan="5" class="text-center text-muted">Nenhum cliente encontrado.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

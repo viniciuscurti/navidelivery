@@ -1,0 +1,41 @@
+<div class="container my-4">
+  <h1>Histórico de Entregas</h1>
+
+  <div class="table-responsive mt-3">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Status</th>
+          <th>Cliente</th>
+          <th>Endereço destino</th>
+          <th>Entregue em</th>
+          <th>Loja</th>
+          <th>Motoboy</th>
+          <th>Tracking</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @deliveries.each do |d| %>
+          <tr>
+            <td><%= d.id %></td>
+            <td><%= d.status %></td>
+            <td><%= d.customer_name %></td>
+            <td><%= d.delivered_address.presence || d.dropoff_address %></td>
+            <td><%= d.delivered_at&.strftime('%d/%m/%Y %H:%M') %></td>
+            <td><%= d.store&.name %></td>
+            <td><%= d.courier&.name %></td>
+            <td>
+              <% if d.respond_to?(:public_tracking_url) && d.public_tracking_url.present? %>
+                <%= link_to 'Abrir', d.public_tracking_url, target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-primary' %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @deliveries.empty? %>
+          <tr><td colspan="8" class="text-center text-muted">Nenhuma entrega encontrada.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

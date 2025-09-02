@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgis/postgis:15-3.3-alpine
@@ -30,7 +28,11 @@ services:
       retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        RAILS_ENV: development
+        PRECOMPILE_ASSETS: "false"
     ports:
       - "3000:3000"
     environment:
@@ -46,15 +48,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: >
-      bash -c "
-        bundle install &&
-        rails db:prepare &&
-        rails server -b 0.0.0.0
-      "
 
   sidekiq:
-    build: .
+    build:
+      context: .
+      args:
+        RAILS_ENV: development
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/navidelivery_development
       REDIS_URL: redis://redis:6379/0
@@ -67,7 +66,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: bundle exec sidekiq
+    command: bundle exec sidekiq -C config/sidekiq.yml
 
 volumes:
   postgres_data:

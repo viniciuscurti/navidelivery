@@ -7,6 +7,8 @@ class Api::V1::DeliveriesController < Api::V1::BaseController
     if @delivery.save
       # Generate route asynchronously
       RouteCalculationJob.perform_later(@delivery.id)
+      # Envia link público via WhatsApp (assíncrono)
+      SendTrackingLinkJob.perform_later(@delivery.id)
 
       render json: delivery_response(@delivery), status: :created
     else

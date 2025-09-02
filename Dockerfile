@@ -2,17 +2,15 @@
 
 ARG RUBY_VERSION=3.3.6
 
+ARG PRECOMPILE_ASSETS=false
 # Stage de build (instala dependências de compilação)
 FROM ruby:${RUBY_VERSION}-alpine AS build
 
-# Variável para controlar precompilação de assets (passar --build-arg PRECOMPILE_ASSETS=true em produção)
+ARG PRECOMPILE_ASSETS
 ARG PRECOMPILE_ASSETS=false
 ENV RAILS_ENV=production \
     BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_JOBS=4 \
-    BUNDLE_RETRY=3
-
-# Dependências de build (postgresql-dev, vips-dev, geos-dev, proj-dev para rgeo/postgis)
 RUN apk add --no-cache build-base git postgresql-dev vips-dev geos-dev proj-dev tzdata \
   && gem update --system --no-document
 
@@ -31,12 +29,6 @@ RUN bundle exec bootsnap precompile app/ lib/ || true
 RUN if [ "$PRECOMPILE_ASSETS" = "true" ]; then \
     DISABLE_DB=1 SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile; \
   fi
-
-# Stage runtime enxuto
-FROM ruby:${RUBY_VERSION}-alpine AS runtime
-ENV RAILS_ENV=production \
-    BUNDLE_PATH=/usr/local/bundle \
-    BUNDLE_DEPLOYMENT=1 \
     BUNDLE_WITHOUT="development test" \
     TZ=UTC
 
@@ -58,3 +50,4 @@ EXPOSE 3000
 
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+

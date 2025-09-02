@@ -1,0 +1,31 @@
+/* Estilos mobile-first e dark mode para área pública extraídos de sw.js */
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background: #f8f9fa;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 600px) {
+  body { font-size: 1.05em; padding: 0 8px; }
+  .navbar { flex-direction: column; align-items: flex-start; }
+  .container { padding: 0 4px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  body { background: #181a1b; color: #eaeaea; }
+  .navbar, .container { background: #222; color: #eaeaea; }
+  a { color: #90caf9; }
+  .btn-primary { background: #1976d2; color: #fff; }
+  .btn-outline-secondary { border-color: #90caf9; color: #90caf9; }
+}
+
+.card { box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 8px; margin-bottom: 1rem; }
+.btn { border-radius: 6px; font-weight: 500; }
+input, textarea { border-radius: 6px; border: 1px solid #ccc; padding: 8px; width: 100%; box-sizing: border-box; }
+
+@media (max-width: 400px) {
+  .btn, input, textarea { font-size: 0.95em; padding: 6px; }
+}
+

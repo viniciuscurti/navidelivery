@@ -1,0 +1,28 @@
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0d6efd">
+
+<!-- iOS meta tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NaviDelivery">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+<!-- Android -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="NaviDelivery">
+
+<script>
+  (function() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(function(reg) {
+            console.debug('[PWA] Service worker registrado:', reg.scope);
+          })
+          .catch(function(err) {
+            console.warn('[PWA] Falha ao registrar service worker:', err);
+          });
+      });
+    }
+  })();
+</script>

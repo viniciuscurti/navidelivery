@@ -1,4 +1,6 @@
 class LocationPing < ApplicationRecord
+  include Geospatial
+
   belongs_to :delivery
   belongs_to :courier
 
