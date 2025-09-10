@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo - NaviDelivery</title>
+  <meta name="description" content="Veja uma demonstração completa da plataforma NaviDelivery em ação.">
+
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Reutilizar estilos da landing page principal */
+    <%= File.read(Rails.root.join('app', 'views', 'home', 'index.html.erb')).match(/<style>(.*?)<\/style>/m)[1] %>
+
+    .demo-container {
+      max-width: 1000px;
+      margin: 8rem auto 4rem;
+      padding: 0 20px;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .demo-title {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .demo-steps {
+      display: grid;
+      gap: 3rem;
+      margin-bottom: 4rem;
+    }
+
+    .demo-step {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      padding: 3rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-step:nth-child(even) {
+      direction: rtl;
+    }
+
+    .demo-step:nth-child(even) > * {
+      direction: ltr;
+    }
+
+    .step-content h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+
+    .step-mockup {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+    }
+
+    .interactive-demo {
+      background: var(--gradient-primary);
+      color: white;
+      padding: 4rem;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      .demo-step {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .demo-step:nth-child(even) {
+        direction: ltr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header simplificado -->
+  <header class="header">
+    <nav class="container">
+      <div class="nav">
+        <%= link_to "NaviDelivery", root_path, class: "logo" %>
+        <%= link_to "← Voltar", root_path, class: "nav-links" %>
+        <%= link_to "Teste Grátis", new_user_registration_path, class: "cta-button" %>
+      </div>
+    </nav>
+  </header>
+
+  <main class="demo-container">
+    <div class="demo-header">
+      <h1 class="demo-title">Demonstração Interativa</h1>
+      <p class="section-subtitle">
+        Descubra como o NaviDelivery funciona na prática através desta demo guiada
+      </p>
+    </div>
+
+    <div class="demo-steps">
+      <div class="demo-step">
+        <div class="step-content">
+          <h3>1. Criação de Entrega</h3>
+          <p>Crie uma nova entrega em segundos através da nossa interface intuitiva ou API.
+          Basta informar os endereços de coleta e entrega, dados do cliente e pronto!</p>
+          <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+            <li>Interface drag-and-drop</li>
+            <li>Validação automática de endereços</li>
+            <li>Cálculo automático de distância</li>
+            <li>Estimativa de tempo</li>
+          </ul>
+        </div>
+        <div class="step-mockup">
+          <div>
+            📦 Interface de Criação<br>
+            <small>(Mockup interativo em desenvolvimento)</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-step">
+        <div class="step-content">
+          <h3>2. Atribuição Inteligente</h3>
+          <p>Nosso sistema atribui automaticamente o entregador mais adequado baseado em
+          localização, disponibilidade e histórico de performance.</p>
+          <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+            <li>Algoritmo de otimização</li>
+            <li>Consideração de trânsito em tempo real</li>
+            <li>Balanceamento de carga</li>
+            <li>Atribuição manual opcional</li>
+          </ul>
+        </div>
+        <div class="step-mockup">
+          <div>
+            🎯 Sistema de Matching<br>
+            <small>(Algoritmo de otimização)</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-step">
+        <div class="step-content">
+          <h3>3. Rastreamento em Tempo Real</h3>
+          <p>Acompanhe cada entrega em tempo real através do nosso mapa interativo.
+          Seus clientes recebem atualizações automáticas via WhatsApp.</p>
+          <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+            <li>GPS em tempo real</li>
+            <li>Notificações automáticas</li>
+            <li>Link público de tracking</li>
+            <li>Estimativas dinâmicas</li>
+          </ul>
+        </div>
+        <div class="step-mockup">
+          <div>
+            🗺️ Mapa de Rastreamento<br>
+            <small>(Integração com Google Maps)</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-step">
+        <div class="step-content">
+          <h3>4. Analytics e Relatórios</h3>
+          <p>Tenha insights completos sobre sua operação com dashboards em tempo real
+          e relatórios detalhados para tomada de decisão.</p>
+          <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+            <li>Métricas de performance</li>
+            <li>Análise de custos</li>
+            <li>Satisfação do cliente</li>
+            <li>Relatórios personalizados</li>
+          </ul>
+        </div>
+        <div class="step-mockup">
+          <div>
+            📊 Dashboard Analytics<br>
+            <small>(Relatórios em tempo real)</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interactive-demo">
+      <h2 style="margin-bottom: 1rem;">Experimente Agora</h2>
+      <p style="margin-bottom: 2rem;">
+        Pronto para ver tudo isso funcionando? Inicie seu teste gratuito e
+        configure sua primeira entrega em menos de 5 minutos.
+      </p>
+      <%= link_to "Iniciar Teste Grátis", new_user_registration_path,
+          class: "button-primary",
+          style: "display: inline-block;" %>
+    </div>
+  </main>
+
+  <script>
+    // Adicionar interatividade futura para os mockups
+    document.querySelectorAll('.step-mockup').forEach(mockup => {
+      mockup.addEventListener('click', function() {
+        this.style.transform = 'scale(1.05)';
+        this.style.transition = 'transform 0.3s ease';
+
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+        }, 200);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -30,6 +30,7 @@ class Api::V1::TrackingController < ApplicationController
   def serialize_full(delivery, last_ping)
     {
       id: delivery.id,
+      store: delivery.store ? { name: delivery.store.name } : nil,
       external_order_code: delivery.external_order_code,
       status: delivery.status,
       progress: delivery.respond_to?(:progress_percentage) ? delivery.progress_percentage : nil,
@@ -57,4 +58,3 @@ class Api::V1::TrackingController < ApplicationController
     }
   end
 end
-

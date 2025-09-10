@@ -20,13 +20,13 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # Evita exigir login em páginas públicas (ex: tracking) e devise controllers
   def authentication_required?
-    return false if devise_controller?
-    !public_path?
-  end
+    # Permitir acesso público para páginas da landing page
+    return false if controller_name == 'home'
+    return false if controller_name == 'health'
+    return false if controller_path.starts_with?('api/v1/public')
+    return false if controller_path.starts_with?('api/v1/tracking')
 
-  def public_path?
-    request.path.start_with?('/public/track') || request.path == '/'
+    true
   end
 end

@@ -1,196 +1,922 @@
-<section class="py-5 py-lg-6 bg-light text-center position-relative overflow-hidden">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <h1 class="display-5 fw-bold mb-3">Rastreamento de Entregas em Tempo Real para Restaurantes</h1>
-        <p class="lead mb-4">Reduza chamadas de suporte, aumente o NPS e tenha visibilidade total da operação com links de acompanhamento ao vivo para seus clientes.</p>
-        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-          <% if user_signed_in? %>
-            <%= link_to 'Ir para o Painel', admin_path, class: 'btn btn-primary btn-lg px-4' %>
-            <%= link_to 'Sair', destroy_user_session_path, method: :delete, class: 'btn btn-outline-secondary btn-lg px-4' %>
-          <% else %>
-            <%= link_to 'Começar Agora', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-primary btn-lg px-4' %>
-            <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Ver Funcionalidades</a>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaviDelivery - Plataforma Completa de Gestão de Entregas</title>
+  <meta name="description" content="Transforme sua operação de entregas com rastreamento em tempo real, otimização de rotas e analytics avançado. Teste grátis por 14 dias.">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= request.original_url %>">
+  <meta property="og:title" content="NaviDelivery - Plataforma Completa de Gestão de Entregas">
+  <meta property="og:description" content="Transforme sua operação de entregas com rastreamento em tempo real, otimização de rotas e analytics avançado.">
+  <meta property="og:image" content="<%= asset_url('navidelivery-og-image.jpg') %>">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="<%= request.original_url %>">
+  <meta property="twitter:title" content="NaviDelivery - Plataforma Completa de Gestão de Entregas">
+  <meta property="twitter:description" content="Transforme sua operação de entregas com rastreamento em tempo real, otimização de rotas e analytics avançado.">
+  <meta property="twitter:image" content="<%= asset_url('navidelivery-og-image.jpg') %>">
+
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <link rel="canonical" href="<%= request.original_url %>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+
+  <style>
+    :root {
+      --primary-color: #3B82F6;
+      --primary-dark: #1D4ED8;
+      --secondary-color: #10B981;
+      --accent-color: #F59E0B;
+      --text-primary: #111827;
+      --text-secondary: #6B7280;
+      --background: #FFFFFF;
+      --surface: #F9FAFB;
+      --border: #E5E7EB;
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary-color);
+    }
+
+    .cta-button {
+      background: var(--primary-color);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cta-button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: var(--gradient-primary);
+      color: white;
+      padding: 8rem 0 6rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+      opacity: 0.3;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .hero .subtitle {
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+
+    .button-primary {
+      background: white;
+      color: var(--primary-color);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .button-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .button-secondary:hover {
+      background: white;
+      color: var(--primary-color);
+    }
+
+    /* Stats Section */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+
+    .stat-item {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 0.5rem;
+    }
+
+    /* Features Section */
+    .features {
+      padding: 6rem 0;
+      background: var(--surface);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 3rem;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    .feature-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .feature-description {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Demo Video Section */
+    .demo-section {
+      padding: 6rem 0;
+      background: white;
+    }
+
+    .demo-video {
+      max-width: 800px;
+      margin: 3rem auto 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-placeholder {
+      background: var(--gradient-secondary);
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      position: relative;
+    }
+
+    .play-button {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .play-button:hover {
+      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Pricing Section */
+    .pricing {
+      padding: 6rem 0;
+      background: var(--surface);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .pricing-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .pricing-card.popular {
+      transform: scale(1.05);
+      border: 2px solid var(--primary-color);
+    }
+
+    .pricing-card.popular::before {
+      content: 'Mais Popular';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary-color);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .plan-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-period {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .plan-description {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+
+    .plan-features li {
+      padding: 0.5rem 0;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--secondary-color);
+      font-weight: bold;
+    }
+
+    .plan-cta {
+      width: 100%;
+      padding: 1rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .plan-cta:hover {
+      background: var(--primary-dark);
+    }
+
+    /* Testimonials */
+    .testimonials {
+      padding: 6rem 0;
+      background: white;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .testimonial-card {
+      background: var(--surface);
+      padding: 2rem;
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .testimonial-text {
+      font-style: italic;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .author-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .author-info h4 {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .author-info span {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      background: var(--gradient-primary);
+      color: white;
+      padding: 6rem 0;
+      text-align: center;
+    }
+
+    .cta-content h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .cta-content p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--text-primary);
+      color: white;
+      padding: 3rem 0 1rem;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .footer-section ul {
+      list-style: none;
+    }
+
+    .footer-section li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-section a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-section a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pricing-card.popular {
+        transform: none;
+      }
+
+      .testimonials-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Loading States */
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* Utility Classes */
+    .text-center { text-align: center; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 1rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 1rem; }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="container">
+      <div class="nav">
+        <%= link_to "NaviDelivery", root_path, class: "logo" %>
+
+        <ul class="nav-links">
+          <li><%= link_to "Funcionalidades", "#features" %></li>
+          <li><%= link_to "Preços", "#pricing" %></li>
+          <li><%= link_to "Depoimentos", "#testimonials" %></li>
+          <li><%= link_to "Demo", demo_path %></li>
+        </ul>
+
+        <div>
+          <%= link_to "Entrar", new_user_session_path, class: "nav-links" %>
+          <%= link_to "Teste Grátis", new_user_registration_path, class: "cta-button" %>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content animate-fade-in">
+        <h1>Transforme Suas Entregas em Experiências Memoráveis</h1>
+        <p class="subtitle">
+          Plataforma completa de gestão de entregas com rastreamento em tempo real,
+          otimização de rotas e analytics avançado. Aumente a satisfação dos seus clientes
+          e reduza custos operacionais.
+        </p>
+
+        <div class="hero-buttons">
+          <%= link_to new_user_registration_path, class: "button-primary" do %>
+            🚀 Começar Teste Grátis
+          <% end %>
+          <%= link_to "#demo", class: "button-secondary" do %>
+            ▶️ Ver Demonstração
           <% end %>
         </div>
-        <p class="text-muted small mt-3 mb-0">Implementação em minutos. Sem trocar seu POS.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section id="features" class="py-5">
-  <div class="container">
-    <div class="text-center mb-5">
-      <h2 class="fw-semibold">Funcionalidades Principais</h2>
-      <p class="text-muted mb-0">Tudo que você precisa para controle operacional de entregas.</p>
-    </div>
-    <div class="row g-4">
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Link Público de Rastreamento</h5>
-            <p class="card-text small text-muted">Compartilhe com o cliente final um mapa ao vivo sem necessidade de login ou app instalado.</p>
+        <!-- Stats -->
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-number"><%= number_with_delimiter(@stats[:total_deliveries]) %>+</span>
+            <span class="stat-label">Entregas Realizadas</span>
           </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Painel Operacional</h5>
-            <p class="card-text small text-muted">Acompanhe status, atrasos, ociosidade e métricas em um só lugar com atualização em tempo real.</p>
+          <div class="stat-item">
+            <span class="stat-number"><%= @stats[:active_couriers] %>+</span>
+            <span class="stat-label">Entregadores Ativos</span>
           </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Integração Simples</h5>
-            <p class="card-text small text-muted">Webhooks e exportação CSV para integrar com POS/ERP sem fricção ou projeto longo.</p>
+          <div class="stat-item">
+            <span class="stat-number"><%= @stats[:partner_stores] %>+</span>
+            <span class="stat-label">Lojas Parceiras</span>
           </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Atualizações em 10–30s</h5>
-            <p class="card-text small text-muted">Precisão configurável usando Hotwire + WebSockets para reduzir consumo de bateria e dados.</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">App Leve p/ Motoboy</h5>
-            <p class="card-text small text-muted">Hotwire Native com localização adaptativa, geofencing e fila offline resiliente.</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Segurança & LGPD</h5>
-            <p class="card-text small text-muted">Consentimento claro, coleta mínima e expurgo automático de dados de localização.</p>
+          <div class="stat-item">
+            <span class="stat-number"><%= @stats[:cities_served] %>+</span>
+            <span class="stat-label">Cidades Atendidas</span>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="metrics" class="py-5 bg-light">
-  <div class="container">
-    <div class="text-center mb-5">
-      <h2 class="fw-semibold">Resultados que Importam</h2>
-      <p class="text-muted mb-0">Indicadores alvo para seu piloto.</p>
-    </div>
-    <div class="row g-4 text-center">
-      <div class="col-6 col-md-3">
-        <h3 class="fw-bold display-6 mb-0">-25%</h3>
-        <p class="small text-muted mb-0">Chamadas “cadê meu pedido?”</p>
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Funcionalidades que Fazem a Diferença</h2>
+        <p class="section-subtitle">
+          Tecnologia de ponta para otimizar cada etapa do processo de entrega
+        </p>
       </div>
-      <div class="col-6 col-md-3">
-        <h3 class="fw-bold display-6 mb-0">+10</h3>
-        <p class="small text-muted mb-0">Pontos em NPS final</p>
-      </div>
-      <div class="col-6 col-md-3">
-        <h3 class="fw-bold display-6 mb-0">80%+</h3>
-        <p class="small text-muted mb-0">Links acessados</p>
-      </div>
-      <div class="col-6 col-md-3">
-        <h3 class="fw-bold display-6 mb-0">Minutos</h3>
-        <p class="small text-muted mb-0">Tempo de ativação</p>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section id="pricing" class="py-5">
-  <div class="container">
-    <div class="text-center mb-5">
-      <h2 class="fw-semibold">Planos Simples</h2>
-      <p class="text-muted">Escale conforme cresce. Sem taxa oculta.</p>
-    </div>
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="border rounded h-100 p-4 d-flex flex-column">
-          <h5 class="fw-bold">Start</h5>
-          <p class="small text-muted flex-grow-1">Até 3 motoboys • 1.000 entregas/mês</p>
-          <div class="mb-3 h2">R$ —</div>
-          <% if user_signed_in? %>
-            <%= link_to 'Upgrade', admin_path, class: 'btn btn-outline-primary w-100' %>
-          <% else %>
-            <%= link_to 'Experimentar', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-outline-primary w-100' %>
-          <% end %>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="border rounded h-100 p-4 d-flex flex-column position-relative">
-          <span class="badge bg-primary position-absolute top-0 start-50 translate-middle">Popular</span>
-          <h5 class="fw-bold mt-3">Grow</h5>
-            <p class="small text-muted flex-grow-1">Até 10 motoboys • 5.000 entregas/mês</p>
-          <div class="mb-3 h2">R$ —</div>
-          <% if user_signed_in? %>
-            <%= link_to 'Upgrade', admin_path, class: 'btn btn-primary w-100' %>
-          <% else %>
-            <%= link_to 'Começar', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-primary w-100' %>
-          <% end %>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="border rounded h-100 p-4 d-flex flex-column">
-          <h5 class="fw-bold">Scale</h5>
-          <p class="small text-muted flex-grow-1">Ilimitado + excedente por entrega adicional</p>
-          <div class="mb-3 h2">Sob consulta</div>
-          <a href="#cta" class="btn btn-outline-primary w-100">Falar com vendas</a>
-        </div>
+      <div class="features-grid">
+        <% @features.each do |feature| %>
+          <div class="feature-card animate-fade-in">
+            <span class="feature-icon"><%= feature[:icon] %></span>
+            <h3 class="feature-title"><%= feature[:title] %></h3>
+            <p class="feature-description"><%= feature[:description] %></p>
+          </div>
+        <% end %>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="faq" class="py-5 bg-light">
-  <div class="container">
-    <div class="text-center mb-5">
-      <h2 class="fw-semibold">Perguntas Frequentes</h2>
-    </div>
-    <div class="accordion" id="faqAccordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="q1">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#a1" aria-expanded="true" aria-controls="a1">Preciso trocar meu POS?</button>
-        </h2>
-        <div id="a1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-          <div class="accordion-body small">Não. Você usa criação manual ou integra via Webhooks / CSV conforme evolui.</div>
-        </div>
+  <!-- Demo Section -->
+  <section id="demo" class="demo-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Veja o NaviDelivery em Ação</h2>
+        <p class="section-subtitle">
+          Descubra como nossa plataforma pode revolucionar suas entregas
+        </p>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="q2">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2" aria-expanded="false" aria-controls="a2">Qual a precisão de localização?</button>
-        </h2>
-        <div id="a2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-          <div class="accordion-body small">Atualizações típicas entre 10–30 segundos, adaptando a velocidade e movimento para economizar bateria.</div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="q3">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a3" aria-expanded="false" aria-controls="a3">Como tratam privacidade?</button>
-        </h2>
-        <div id="a3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-          <div class="accordion-body small">Coletamos somente durante entregas/turno e expurgamos pings brutos após janela configurável.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section id="cta" class="py-5 text-center border-top">
-  <div class="container">
-    <h2 class="fw-semibold mb-3">Pronto para testar?</h2>
-    <p class="text-muted mb-4">Ative em minutos e acompanhe suas primeiras entregas hoje.</p>
-    <% if user_signed_in? %>
-      <%= link_to 'Ir para o Painel', admin_path, class: 'btn btn-primary btn-lg px-4' %>
-    <% else %>
-      <%= link_to 'Entrar com Google', (defined?(user_google_oauth2_omniauth_authorize_path) ? user_google_oauth2_omniauth_authorize_path : new_user_session_path), class: 'btn btn-primary btn-lg px-4' %>
-    <% end %>
-  </div>
-</section>
+      <div class="demo-video">
+        <div class="demo-placeholder">
+          <div class="play-button">
+            <span style="font-size: 2rem;">▶️</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Planos que Se Adaptam ao Seu Negócio</h2>
+        <p class="section-subtitle">
+          Comece grátis e escale conforme sua operação cresce
+        </p>
+      </div>
+
+      <div class="pricing-grid">
+        <% @pricing_plans.each do |plan| %>
+          <div class="pricing-card <%= 'popular' if plan[:popular] %>">
+            <h3 class="plan-name"><%= plan[:name] %></h3>
+            <div class="plan-price">
+              <%= plan[:price] %><span class="plan-period"><%= plan[:period] %></span>
+            </div>
+            <p class="plan-description"><%= plan[:description] %></p>
+
+            <ul class="plan-features">
+              <% plan[:features].each do |feature| %>
+                <li><%= feature %></li>
+              <% end %>
+            </ul>
+
+            <button class="plan-cta"><%= plan[:cta] %></button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">O Que Nossos Clientes Dizem</h2>
+        <p class="section-subtitle">
+          Histórias reais de empresas que transformaram suas entregas
+        </p>
+      </div>
+
+      <div class="testimonials-grid">
+        <% @testimonials.each do |testimonial| %>
+          <div class="testimonial-card">
+            <p class="testimonial-text">"<%= testimonial[:text] %>"</p>
+            <div class="testimonial-author">
+              <img src="<%= testimonial[:avatar] %>" alt="<%= testimonial[:name] %>" class="author-avatar">
+              <div class="author-info">
+                <h4><%= testimonial[:name] %></h4>
+                <span><%= testimonial[:role] %> - <%= testimonial[:company] %></span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Pronto para Revolucionar Suas Entregas?</h2>
+        <p>Comece seu teste gratuito hoje mesmo. Sem compromisso, sem cartão de crédito.</p>
+        <%= link_to "Iniciar Teste Grátis por 14 Dias", new_user_registration_path, class: "button-primary" %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Produto</h3>
+          <ul>
+            <li><%= link_to "Funcionalidades", "#features" %></li>
+            <li><%= link_to "Preços", "#pricing" %></li>
+            <li><%= link_to "API", "#" %></li>
+            <li><%= link_to "Integrações", "#" %></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h3>Empresa</h3>
+          <ul>
+            <li><%= link_to "Sobre", about_path %></li>
+            <li><%= link_to "Blog", "#" %></li>
+            <li><%= link_to "Carreiras", "#" %></li>
+            <li><%= link_to "Contato", contact_path %></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h3>Suporte</h3>
+          <ul>
+            <li><%= link_to "Central de Ajuda", "#" %></li>
+            <li><%= link_to "Documentação", "#" %></li>
+            <li><%= link_to "Status", "#" %></li>
+            <li><%= link_to "Comunidade", "#" %></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h3>Legal</h3>
+          <ul>
+            <li><%= link_to "Termos de Uso", "#" %></li>
+            <li><%= link_to "Política de Privacidade", "#" %></li>
+            <li><%= link_to "LGPD", "#" %></li>
+            <li><%= link_to "SLA", "#" %></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; <%= Date.current.year %> NaviDelivery. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Header scroll effect
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('.header');
+      if (window.scrollY > 100) {
+        header.style.background = 'rgba(255, 255, 255, 0.98)';
+        header.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+      } else {
+        header.style.background = 'rgba(255, 255, 255, 0.95)';
+        header.style.boxShadow = 'none';
+      }
+    });
+
+    // Animate elements on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.feature-card, .pricing-card, .testimonial-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+
+    // Demo video placeholder click
+    document.querySelector('.demo-placeholder').addEventListener('click', function() {
+      alert('Integrar aqui com vídeo do produto ou demo interativa');
+    });
+
+    // CTA button tracking
+    document.querySelectorAll('.cta-button, .button-primary, .plan-cta').forEach(button => {
+      button.addEventListener('click', function() {
+        // Analytics tracking
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'cta_click', {
+            'event_category': 'conversion',
+            'event_label': this.textContent.trim()
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

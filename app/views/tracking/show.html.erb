@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking - Entrega #<%= @delivery.external_order_code %></title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['GOOGLE_MAPS_API_KEY'] %>&libraries=geometry"></script>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .tracking-header { background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+        .tracking-content { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .map-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+        .info-panel { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+        #map { height: 450px; width: 100%; }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 24px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .timeline { margin-top: 24px; }
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .timeline-item.completed { background: #f0fdf4; border-left: 4px solid #10b981; }
+        .timeline-item.current { background: #fef3c7; border-left: 4px solid #f59e0b; }
+        .timeline-item.pending { background: #f9fafb; border-left: 4px solid #d1d5db; }
+        .timeline-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        .timeline-dot.completed { background: #10b981; }
+        .timeline-dot.current { background: #f59e0b; }
+        .timeline-dot.pending { background: #d1d5db; }
+        .eta-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: white;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 8px;
+        }
+        .courier-marker {
+            animation: bounce 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .connection-status.connected { background: #10b981; }
+        .connection-status.disconnected { background: #ef4444; }
+        .connection-status.connecting { background: #f59e0b; }
+        @media (max-width: 768px) {
+            .tracking-content { grid-template-columns: 1fr; }
+            .container { padding: 0 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status connecting" id="connection-status">
+        Conectando...
+    </div>
+
+    <div class="container">
+        <div class="tracking-header">
+            <h1>
+                <span class="live-indicator"></span>
+                Acompanhe sua entrega em tempo real
+            </h1>
+            <p>Pedido: <strong><%= @delivery.external_order_code %></strong></p>
+            <span class="status-badge" style="background-color: <%= tracking_status_color(@delivery.status) %>">
+                <%= tracking_status_pt(@delivery.status) %>
+            </span>
+        </div>
+
+        <div class="tracking-content">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+
+            <div class="info-panel">
+                <div class="eta-info" id="eta-info">
+                    <h3 style="margin: 0 0 8px 0;">⏰ Estimativa de Chegada</h3>
+                    <div id="eta-display" style="font-size: 24px; font-weight: 600;">Calculando...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: <%= @tracking_data[:status][:progress] || 0 %>%"></div>
+                    </div>
+                    <small id="progress-text"><%= @tracking_data[:status][:progress] || 0 %>% concluído</small>
+                </div>
+
+                <h3>📋 Status da Entrega</h3>
+                <div class="timeline" id="timeline">
+                    <!-- Timeline será preenchida via JavaScript -->
+                </div>
+
+                <div id="courier-info" style="margin-top: 24px; display: none;">
+                    <h3>🏍️ Entregador</h3>
+                    <p id="courier-name" style="font-weight: 600;"></p>
+                    <p><small>📍 Última atualização: <span id="last-update"></span></small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração inicial com dados do servidor
+        const deliveryToken = '<%= @delivery.public_token %>';
+        const apiBaseUrl = '/api/v1/public';
+        const initialData = <%= raw @tracking_data.to_json %>;
+        let map, courierMarker, routePolyline, courierPath;
+        let cable, subscription;
+        let lastCourierPosition = null;
+
+        // Status de conexão
+        const connectionStatus = document.getElementById('connection-status');
+
+        function updateConnectionStatus(status) {
+            connectionStatus.className = `connection-status ${status}`;
+            connectionStatus.textContent = status === 'connected' ? '🟢 Conectado' :
+                                          status === 'disconnected' ? '🔴 Desconectado' :
+                                          '🟡 Conectando...';
+        }
+
+        // Inicializar mapa
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: { lat: -23.5505, lng: -46.6333 },
+                styles: [
+                    {
+                        featureType: 'poi',
+                        elementType: 'labels',
+                        stylers: [{ visibility: 'off' }]
+                    }
+                ],
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true
+            });
+
+            // Carregar dados iniciais
+            updateTrackingDisplay(initialData);
+
+            // Conectar WebSocket para atualizações em tempo real
+            connectWebSocket();
+        }
+
+        // Atualizar display com dados de tracking
+        function updateTrackingDisplay(trackingData) {
+            console.log('📡 Atualizando display:', trackingData);
+
+            // Atualizar ETA
+            updateETADisplay(trackingData.eta, trackingData.status.progress);
+
+            // Atualizar timeline
+            updateTimeline(trackingData.timeline);
+
+            // Atualizar mapa
+            updateMap(trackingData);
+
+            // Atualizar info do courier
+            if (trackingData.courier) {
+                updateCourierInfo(trackingData.courier);
+            }
+        }
+
+        // Atualizar display de ETA
+        function updateETADisplay(eta, progress) {
+            const etaDisplay = document.getElementById('eta-display');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+
+            if (eta && eta.estimated_at) {
+                const arrivalTime = new Date(eta.estimated_at);
+                etaDisplay.innerHTML = `
+                    ${arrivalTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}<br>
+                    <small style="font-size: 14px; font-weight: 400;">${eta.current_duration || 'Calculando...'}</small>
+                `;
+            } else {
+                etaDisplay.innerHTML = 'Calculando...<br><small style="font-size: 14px;">⏳ Aguarde</small>';
+            }
+
+            progressFill.style.width = `${progress || 0}%`;
+            progressText.textContent = `${progress || 0}% concluído`;
+        }
+
+        // Atualizar timeline
+        function updateTimeline(timeline) {
+            const timelineContainer = document.getElementById('timeline');
+            timelineContainer.innerHTML = '';
+
+            if (!timeline || timeline.length === 0) return;
+
+            timeline.forEach((item, index) => {
+                const div = document.createElement('div');
+                const isCurrentStep = item.completed && (index === timeline.length - 1 || !timeline[index + 1]?.completed);
+                div.className = `timeline-item ${item.completed ? (isCurrentStep ? 'current' : 'completed') : 'pending'}`;
+
+                const dotClass = item.completed ? (isCurrentStep ? 'current' : 'completed') : 'pending';
+                div.innerHTML = `
+                    <div class="timeline-dot ${dotClass}"></div>
+                    <div>
+                        <strong>${item.description}</strong>
+                        ${item.timestamp ? `<br><small style="color: #6b7280;">${new Date(item.timestamp).toLocaleString('pt-BR')}</small>` : ''}
+                    </div>
+                `;
+
+                timelineContainer.appendChild(div);
+            });
+        }
+
+        // Atualizar mapa com animação suave do motoboy
+        function updateMap(trackingData) {
+            if (!map) return;
+
+            // Remover markers e rotas anteriores (exceto courier)
+            if (routePolyline) routePolyline.setMap(null);
+
+            const bounds = new google.maps.LatLngBounds();
+
+            // Adicionar marcadores de origem e destino
+            if (trackingData.route) {
+                if (trackingData.route.origin) {
+                    new google.maps.Marker({
+                        position: trackingData.route.origin,
+                        map: map,
+                        title: '🏪 Loja',
+                        icon: {
+                            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                <svg fill="#3b82f6" height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            `),
+                            scaledSize: new google.maps.Size(40, 40)
+                        }
+                    });
+                    bounds.extend(trackingData.route.origin);
+                }
+
+                if (trackingData.route.destination) {
+                    new google.maps.Marker({
+                        position: trackingData.route.destination,
+                        map: map,
+                        title: '🏠 Destino',
+                        icon: {
+                            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                <svg fill="#10b981" height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            `),
+                            scaledSize: new google.maps.Size(40, 40)
+                        }
+                    });
+                    bounds.extend(trackingData.route.destination);
+                }
+
+                // Desenhar rota se disponível
+                if (trackingData.route.polyline) {
+                    const decodedPath = google.maps.geometry.encoding.decodePath(trackingData.route.polyline);
+                    routePolyline = new google.maps.Polyline({
+                        path: decodedPath,
+                        geodesic: true,
+                        strokeColor: '#3b82f6',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 5
+                    });
+                    routePolyline.setMap(map);
+                }
+            }
+
+            // Atualizar posição do courier (TEMPO REAL)
+            updateCourierMarker(trackingData.courier);
+
+            // Ajustar zoom para mostrar todos os marcadores
+            if (!bounds.isEmpty()) {
+                map.fitBounds(bounds);
+                if (map.getZoom() > 16) map.setZoom(16);
+            }
+        }
+
+        // Atualizar marcador do motoboy com animação suave
+        function updateCourierMarker(courierData) {
+            if (!courierData) return;
+
+            const courierPosition = {
+                lat: courierData.latitude,
+                lng: courierData.longitude
+            };
+
+            if (!courierMarker) {
+                // Criar marcador do motoboy
+                courierMarker = new google.maps.Marker({
+                    position: courierPosition,
+                    map: map,
+                    title: `🏍️ ${courierData.courier_name || 'Entregador'}`,
+                    icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" fill="#f59e0b" stroke="white" stroke-width="2"/>
+                                <path d="M12 6v6l4 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(48, 48),
+                        anchor: new google.maps.Point(24, 24)
+                    },
+                    animation: google.maps.Animation.DROP
+                });
+
+                // Adicionar info window
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 8px;">
+                            <strong>🏍️ ${courierData.courier_name || 'Entregador'}</strong><br>
+                            <small>📍 Última atualização: ${new Date(courierData.last_update).toLocaleTimeString('pt-BR')}</small>
+                        </div>
+                    `
+                });
+
+                courierMarker.addListener('click', () => {
+                    infoWindow.open(map, courierMarker);
+                });
+            } else {
+                // Animar movimento suave do marcador
+                animateMarkerTo(courierMarker, courierPosition);
+            }
+
+            lastCourierPosition = courierPosition;
+        }
+
+        // Animação suave do marcador
+        function animateMarkerTo(marker, newPosition) {
+            const startPosition = marker.getPosition();
+            const endPosition = newPosition;
+
+            let step = 0;
+            const steps = 60; // 60 frames de animação
+            const stepSize = 1 / steps;
+
+            function animate() {
+                step++;
+                const progress = step * stepSize;
+
+                if (progress <= 1) {
+                    const lat = startPosition.lat() + (endPosition.lat - startPosition.lat()) * progress;
+                    const lng = startPosition.lng() + (endPosition.lng - startPosition.lng()) * progress;
+
+                    marker.setPosition(new google.maps.LatLng(lat, lng));
+                    requestAnimationFrame(animate);
+                } else {
+                    marker.setPosition(endPosition);
+                }
+            }
+
+            animate();
+        }
+
+        // Atualizar informações do courier
+        function updateCourierInfo(courierData) {
+            const courierInfo = document.getElementById('courier-info');
+            const courierName = document.getElementById('courier-name');
+            const lastUpdate = document.getElementById('last-update');
+
+            courierName.textContent = courierData.courier_name || 'Entregador';
+            lastUpdate.textContent = new Date(courierData.last_update).toLocaleString('pt-BR');
+            courierInfo.style.display = 'block';
+        }
+
+        // Conectar WebSocket para atualizações em tempo real
+        function connectWebSocket() {
+            updateConnectionStatus('connecting');
+
+            if (typeof ActionCable === 'undefined') {
+                console.log('❌ ActionCable não disponível, usando polling...');
+                startPolling();
+                return;
+            }
+
+            cable = ActionCable.createConsumer('/cable');
+            subscription = cable.subscriptions.create(
+                {
+                    channel: 'TrackingChannel',
+                    delivery_token: deliveryToken
+                },
+                {
+                    connected() {
+                        console.log('✅ Conectado ao tracking em tempo real');
+                        updateConnectionStatus('connected');
+                    },
+
+                    disconnected() {
+                        console.log('❌ Desconectado do tracking');
+                        updateConnectionStatus('disconnected');
+                        // Tentar reconectar após 3 segundos
+                        setTimeout(() => {
+                            if (subscription) subscription.unsubscribe();
+                            connectWebSocket();
+                        }, 3000);
+                    },
+
+                    received(data) {
+                        console.log('📡 Dados recebidos via WebSocket:', data);
+
+                        switch (data.type) {
+                            case 'initial_data':
+                            case 'refresh_data':
+                                updateTrackingDisplay(data.data);
+                                break;
+                            case 'location_update':
+                                console.log('📍 ATUALIZAÇÃO DE LOCALIZAÇÃO DO MOTOBOY:', data.data);
+                                updateCourierLocationRealTime(data.data);
+                                break;
+                            case 'status_update':
+                                updateStatus(data.data);
+                                break;
+                            case 'eta_updated':
+                                updateETADisplay(data.data.eta, data.data.progress);
+                                break;
+                            case 'notification':
+                                showNotification(data.data);
+                                break;
+                        }
+                    }
+                }
+            );
+        }
+
+        // Fallback: polling se WebSocket não disponível
+        function startPolling() {
+            updateConnectionStatus('disconnected');
+            setInterval(async () => {
+                try {
+                    const response = await fetch(`${apiBaseUrl}/track/${deliveryToken}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        updateTrackingDisplay(data.data);
+                    }
+                } catch (error) {
+                    console.error('Erro no polling:', error);
+                }
+            }, 10000); // Atualizar a cada 10 segundos
+        }
+
+        // Atualizar apenas localização do courier EM TEMPO REAL
+        function updateCourierLocationRealTime(data) {
+            console.log('🏍️ Atualizando localização do motoboy em TEMPO REAL:', data);
+
+            if (data.courier) {
+                updateCourierMarker(data.courier);
+                updateCourierInfo(data.courier);
+            }
+
+            if (data.eta) {
+                updateETADisplay(data.eta, data.progress);
+            }
+        }
+
+        // Atualizar status
+        function updateStatus(data) {
+            if (data.timeline) {
+                updateTimeline(data.timeline);
+            }
+
+            updateETADisplay(null, data.progress);
+        }
+
+        // Mostrar notificação
+        function showNotification(notification) {
+            // Criar toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #1f2937;
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                max-width: 300px;
+                z-index: 1001;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            toast.textContent = notification.text;
+            document.body.appendChild(toast);
+
+            // Animar entrada
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Remover após 5 segundos
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 5000);
+        }
+
+        // Inicializar quando página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando tracking em tempo real...');
+            initMap();
+        });
+
+        // Limpar conexões quando sair da página
+        window.addEventListener('beforeunload', function() {
+            if (subscription) {
+                subscription.unsubscribe();
+            }
+            if (cable) {
+                cable.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>

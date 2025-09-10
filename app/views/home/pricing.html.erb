@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preços - NaviDelivery</title>
+  <meta name="description" content="Conheça nossos planos e encontre a solução perfeita para o seu negócio.">
+
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Reutilizar estilos base */
+    <%= File.read(Rails.root.join('app', 'views', 'home', 'index.html.erb')).match(/<style>(.*?)<\/style>/m)[1] %>
+
+    .pricing-page {
+      padding: 8rem 0 4rem;
+      min-height: 100vh;
+    }
+
+    .pricing-hero {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .pricing-hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .toggle-billing {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: var(--border);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .toggle-switch.active {
+      background: var(--primary-color);
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(30px);
+    }
+
+    .billing-label {
+      font-weight: 500;
+    }
+
+    .billing-label.active {
+      color: var(--primary-color);
+    }
+
+    .savings-badge {
+      background: var(--secondary-color);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .faq-section {
+      margin-top: 6rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 0;
+    }
+
+    .faq-question {
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faq-answer {
+      margin-top: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      display: none;
+    }
+
+    .faq-answer.show {
+      display: block;
+    }
+
+    .enterprise-cta {
+      background: var(--gradient-primary);
+      color: white;
+      padding: 4rem;
+      border-radius: 16px;
+      text-align: center;
+      margin-top: 4rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <nav class="container">
+      <div class="nav">
+        <%= link_to "NaviDelivery", root_path, class: "logo" %>
+        <%= link_to "← Voltar", root_path, class: "nav-links" %>
+        <%= link_to "Teste Grátis", new_user_registration_path, class: "cta-button" %>
+      </div>
+    </nav>
+  </header>
+
+  <main class="pricing-page">
+    <div class="container">
+      <div class="pricing-hero">
+        <h1>Preços Transparentes para Todo Tipo de Negócio</h1>
+        <p class="section-subtitle">
+          Comece grátis e pague apenas pelo que usar. Sem surpresas, sem taxas ocultas.
+        </p>
+
+        <div class="toggle-billing">
+          <span class="billing-label active">Mensal</span>
+          <div class="toggle-switch" id="billingToggle">
+            <div class="toggle-slider"></div>
+          </div>
+          <span class="billing-label">Anual <span class="savings-badge">20% OFF</span></span>
+        </div>
+      </div>
+
+      <div class="pricing-grid">
+        <% @pricing_plans.each_with_index do |plan, index| %>
+          <div class="pricing-card <%= 'popular' if plan[:popular] %>" data-plan="<%= index %>">
+            <h3 class="plan-name"><%= plan[:name] %></h3>
+            <div class="plan-price">
+              <span class="monthly-price"><%= plan[:price] %></span>
+              <span class="annual-price" style="display: none;">
+                <%= plan[:name] == 'Starter' ? 'R$ 79' : plan[:name] == 'Professional' ? 'R$ 239' : 'Sob consulta' %>
+              </span>
+              <span class="plan-period monthly-period"><%= plan[:period] %></span>
+              <span class="plan-period annual-period" style="display: none;">/mês (anual)</span>
+            </div>
+            <p class="plan-description"><%= plan[:description] %></p>
+
+            <ul class="plan-features">
+              <% plan[:features].each do |feature| %>
+                <li><%= feature %></li>
+              <% end %>
+            </ul>
+
+            <button class="plan-cta" onclick="selectPlan('<%= plan[:name] %>')">
+              <%= plan[:cta] %>
+            </button>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="enterprise-cta">
+        <h2 style="margin-bottom: 1rem;">Precisa de Algo Personalizado?</h2>
+        <p style="margin-bottom: 2rem;">
+          Para empresas com necessidades específicas, oferecemos soluções customizadas
+          com SLA garantido e suporte dedicado.
+        </p>
+        <%= link_to "Falar com Especialista", contact_path, class: "button-primary" %>
+      </div>
+
+      <div class="faq-section">
+        <h2 class="section-title text-center mb-3">Perguntas Frequentes</h2>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Como funciona o período de teste gratuito?
+            <span>+</span>
+          </div>
+          <div class="faq-answer">
+            Você tem 14 dias para testar todas as funcionalidades sem limitações.
+            Não é necessário cartão de crédito para começar.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Posso mudar de plano a qualquer momento?
+            <span>+</span>
+          </div>
+          <div class="faq-answer">
+            Sim! Você pode fazer upgrade ou downgrade do seu plano a qualquer momento.
+            As mudanças são refletidas na próxima cobrança.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Há taxa de configuração ou cancelamento?
+            <span>+</span>
+          </div>
+          <div class="faq-answer">
+            Não cobramos nenhuma taxa adicional. Você paga apenas a mensalidade do plano escolhido
+            e pode cancelar a qualquer momento.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Como funciona o suporte técnico?
+            <span>+</span>
+          </div>
+          <div class="faq-answer">
+            Oferecemos suporte por email para todos os planos, suporte prioritário para o Professional
+            e suporte 24/7 com gerente dedicado para o Enterprise.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Os dados ficam seguros na plataforma?
+            <span>+</span>
+          </div>
+          <div class="faq-answer">
+            Sim! Utilizamos criptografia de ponta a ponta, backups automáticos e estamos em conformidade
+            com a LGPD. Seus dados estão protegidos com os mais altos padrões de segurança.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Toggle billing frequency
+    document.getElementById('billingToggle').addEventListener('click', function() {
+      this.classList.toggle('active');
+
+      const isAnnual = this.classList.contains('active');
+      const monthlyLabels = document.querySelectorAll('.billing-label')[0];
+      const annualLabels = document.querySelectorAll('.billing-label')[1];
+
+      if (isAnnual) {
+        monthlyLabels.classList.remove('active');
+        annualLabels.classList.add('active');
+
+        document.querySelectorAll('.monthly-price, .monthly-period').forEach(el => {
+          el.style.display = 'none';
+        });
+        document.querySelectorAll('.annual-price, .annual-period').forEach(el => {
+          el.style.display = 'inline';
+        });
+      } else {
+        monthlyLabels.classList.add('active');
+        annualLabels.classList.remove('active');
+
+        document.querySelectorAll('.monthly-price, .monthly-period').forEach(el => {
+          el.style.display = 'inline';
+        });
+        document.querySelectorAll('.annual-price, .annual-period').forEach(el => {
+          el.style.display = 'none';
+        });
+      }
+    });
+
+    // FAQ toggle
+    function toggleFaq(element) {
+      const answer = element.nextElementSibling;
+      const icon = element.querySelector('span');
+
+      answer.classList.toggle('show');
+      icon.textContent = answer.classList.contains('show') ? '−' : '+';
+    }
+
+    // Plan selection
+    function selectPlan(planName) {
+      // Implementar redirecionamento para registro com plano pré-selecionado
+      const url = new URL('<%= new_user_registration_path %>', window.location.origin);
+      url.searchParams.set('plan', planName.toLowerCase());
+      window.location.href = url.toString();
+    }
+  </script>
+</body>
+</html>
+

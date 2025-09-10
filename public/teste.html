@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaviDelivery - Teste de Acesso</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .status { padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .link-list { list-style: none; padding: 0; }
+        .link-list li { margin: 0.5rem 0; }
+        .link-list a {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .link-list a:hover { background: #0056b3; }
+        .instructions { background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+    <h1>🚚 NaviDelivery - Teste de Acesso</h1>
+
+    <div class="instructions">
+        <h2>📋 Como Acessar a Landing Page</h2>
+        <p><strong>IMPORTANTE:</strong> Use apenas HTTP (não HTTPS) para acessar o projeto em desenvolvimento.</p>
+
+        <h3>🌐 Links Diretos (Clique nos botões abaixo):</h3>
+        <ul class="link-list">
+            <li><a href="http://localhost:3000" target="_blank">🏠 Landing Page Principal</a></li>
+            <li><a href="http://localhost:3000/demo" target="_blank">🎬 Página de Demo</a></li>
+            <li><a href="http://localhost:3000/pricing" target="_blank">💰 Página de Preços</a></li>
+            <li><a href="http://localhost:3000/contact" target="_blank">📞 Página de Contato</a></li>
+            <li><a href="http://localhost:3000/about" target="_blank">🏢 Página Sobre</a></li>
+        </ul>
+    </div>
+
+    <div class="status warning">
+        <h3>⚠️ Se os links não funcionarem:</h3>
+        <ol>
+            <li>Copie e cole manualmente na barra de endereços: <code>http://localhost:3000</code></li>
+            <li>Certifique-se de usar <strong>HTTP</strong> (não HTTPS)</li>
+            <li>Se o navegador forçar HTTPS, tente em modo privado/incógnito</li>
+            <li>Aguarde 1-2 minutos para o servidor Rails terminar de carregar</li>
+        </ol>
+    </div>
+
+    <div class="status success">
+        <h3>✅ O que você deve ver quando funcionar:</h3>
+        <ul>
+            <li>Hero section com gradiente azul/roxo</li>
+            <li>Menu de navegação (Funcionalidades, Preços, Depoimentos)</li>
+            <li>Botões "Teste Grátis" e "Ver Demonstração"</li>
+            <li>Estatísticas em tempo real</li>
+            <li>Grid de funcionalidades com ícones</li>
+            <li>Seção de preços com 3 planos</li>
+            <li>Testimonials de clientes</li>
+            <li>Footer completo</li>
+        </ul>
+    </div>
+
+    <script>
+        // Verificar se o servidor Rails está rodando
+        function checkServer() {
+            fetch('http://localhost:3000/health')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('server-status').innerHTML =
+                            '<div class="status success">✅ Servidor Rails está ATIVO na porta 3000</div>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('server-status').innerHTML =
+                        '<div class="status error">❌ Servidor Rails não está respondendo. Aguarde alguns segundos e recarregue a página.</div>';
+                });
+        }
+
+        // Verificar status ao carregar a página
+        window.onload = function() {
+            setTimeout(checkServer, 2000);
+        };
+    </script>
+
+    <div id="server-status">
+        <div class="status warning">🔄 Verificando status do servidor...</div>
+    </div>
+
+    <div class="instructions">
+        <h3>🔧 Status Atual do Projeto:</h3>
+        <ul>
+            <li>✅ Configurações SSL removidas</li>
+            <li>✅ Scripts complexos removidos</li>
+            <li>✅ Rails server iniciado com configuração padrão</li>
+            <li>✅ Landing page moderna implementada</li>
+            <li>✅ 5 páginas criadas (Home, Demo, Pricing, Contact, About)</li>
+        </ul>
+    </div>
+</body>
+</html>

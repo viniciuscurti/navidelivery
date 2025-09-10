@@ -1,0 +1,32 @@
+# Environment variables configuration
+# Copy this file to config/application.yml and set your values
+
+development:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/navidelivery_development
+  REDIS_URL: redis://localhost:6379/1
+  SECRET_KEY_BASE: your_secret_key_here
+  JWT_SECRET: your_jwt_secret_here
+  MAPS_API_KEY: your_google_maps_api_key
+  WHATSAPP_API_URL: https://api.whatsapp.business/v1
+  WHATSAPP_API_TOKEN: your_whatsapp_token
+  WEBHOOK_SECRET: your_webhook_secret
+  DEFAULT_FROM_EMAIL: noreply@navidelivery.com
+  FRONTEND_URL: http://localhost:3001
+
+test:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/navidelivery_test
+  REDIS_URL: redis://localhost:6379/2
+  SECRET_KEY_BASE: test_secret_key
+  JWT_SECRET: test_jwt_secret
+
+production:
+  DATABASE_URL: <%= ENV['DATABASE_URL'] %>
+  REDIS_URL: <%= ENV['REDIS_URL'] %>
+  SECRET_KEY_BASE: <%= ENV['SECRET_KEY_BASE'] %>
+  JWT_SECRET: <%= ENV['JWT_SECRET'] %>
+  MAPS_API_KEY: <%= ENV['MAPS_API_KEY'] %>
+  WHATSAPP_API_URL: <%= ENV['WHATSAPP_API_URL'] %>
+  WHATSAPP_API_TOKEN: <%= ENV['WHATSAPP_API_TOKEN'] %>
+  WEBHOOK_SECRET: <%= ENV['WEBHOOK_SECRET'] %>
+  DEFAULT_FROM_EMAIL: <%= ENV['DEFAULT_FROM_EMAIL'] %>
+  FRONTEND_URL: <%= ENV['FRONTEND_URL'] %>

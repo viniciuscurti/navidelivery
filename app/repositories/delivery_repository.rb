@@ -1,4 +1,3 @@
-# Repository de Delivery centraliza queries
 class DeliveryRepository
   def self.find_by_public_token(token)
     Delivery.find_by(public_token: token)

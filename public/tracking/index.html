@@ -1,103 +1,413 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0d6efd">
-  <title>NaviDelivery • Tracking</title>
-  <link rel="manifest" href="/tracking/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/tracking/images/icon-192.png">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/tracking/styles.css">
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css">
-  <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking - Entrega #<%= @delivery.external_order_code %></title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['GOOGLE_MAPS_API_KEY'] %>&libraries=geometry"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .tracking-header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tracking-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .map-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .info-panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #map { height: 400px; width: 100%; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .timeline { margin-top: 20px; }
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .timeline-item.completed { background: #f0fdf4; }
+        .timeline-item.current { background: #fef3c7; }
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        .timeline-dot.completed { background: #10b981; }
+        .timeline-dot.current { background: #f59e0b; }
+        .timeline-dot.pending { background: #d1d5db; }
+        .eta-info {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s ease;
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (max-width: 768px) {
+            .tracking-content { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-  <div id="app">
-    <header class="app-header">
-      <h1 class="logo">NaviDelivery</h1>
-      <p class="status-badge" id="statusBadge">Carregando...</p>
-    </header>
-
-    <main class="container-fluid p-0">
-      <div id="map" class="tracking-map"></div>
-
-      <div class="delivery-info card">
-        <div class="card-body">
-          <div id="loading" class="text-center">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Carregando...</span>
-            </div>
-            <p>Carregando informações...</p>
-          </div>
-
-          <div id="deliveryDetails" class="d-none">
-            <div class="delivery-header">
-              <h2 id="storeName">Carregando...</h2>
-              <p id="orderCode" class="order-code">Pedido #</p>
-            </div>
-
-            <div class="delivery-status-wrapper">
-              <ul class="status-timeline">
-                <li id="statusPreparing" class="status-item">
-                  <div class="status-icon"></div>
-                  <div class="status-text">Preparando</div>
-                </li>
-                <li id="statusReady" class="status-item">
-                  <div class="status-icon"></div>
-                  <div class="status-text">Pronto</div>
-                </li>
-                <li id="statusOnTheWay" class="status-item">
-                  <div class="status-icon"></div>
-                  <div class="status-text">A caminho</div>
-                </li>
-                <li id="statusDelivered" class="status-item">
-                  <div class="status-icon"></div>
-                  <div class="status-text">Entregue</div>
-                </li>
-              </ul>
-            </div>
-
-            <div class="delivery-details">
-              <div class="detail-item">
-                <h3>Endereço de entrega</h3>
-                <p id="deliveryAddress">Carregando...</p>
-              </div>
-
-              <div class="detail-item">
-                <h3>Entregador</h3>
-                <p id="courierName">Carregando...</p>
-              </div>
-
-              <div class="detail-item">
-                <h3>Tempo estimado</h3>
-                <p id="estimatedTime">Calculando...</p>
-              </div>
-            </div>
-          </div>
-
-          <div id="errorMessage" class="alert alert-danger d-none">
-            Erro ao carregar informações de entrega. Por favor, verifique o código de rastreamento.
-          </div>
+    <div class="container">
+        <div class="tracking-header">
+            <h1>
+                <span class="live-indicator"></span>
+                Acompanhe sua entrega em tempo real
+            </h1>
+            <p>Pedido: <strong><%= @delivery.external_order_code %></strong></p>
+            <span class="status-badge" style="background-color: <%= tracking_status_color(@delivery.status) %>">
+                <%= tracking_status_pt(@delivery.status) %>
+            </span>
         </div>
-      </div>
-    </main>
 
-    <footer class="app-footer">
-      <p>© NaviDelivery - Acompanhamento em tempo real</p>
-    </footer>
-  </div>
+        <div class="tracking-content">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
 
-  <script src="/tracking/app.js"></script>
-  <script>
-    // Registra o service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/tracking/service-worker.js')
-          .then(reg => console.log('Service Worker registrado'))
-          .catch(err => console.log('Erro ao registrar Service Worker', err));
-      });
-    }
-  </script>
+            <div class="info-panel">
+                <div class="eta-info" id="eta-info">
+                    <h3>Estimativa de Chegada</h3>
+                    <div id="eta-display">Calculando...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <small id="progress-text">0% concluído</small>
+                </div>
+
+                <h3>Status da Entrega</h3>
+                <div class="timeline" id="timeline">
+                    <!-- Timeline será preenchida via JavaScript -->
+                </div>
+
+                <div id="courier-info" style="margin-top: 20px; display: none;">
+                    <h3>Entregador</h3>
+                    <p id="courier-name"></p>
+                    <p><small>Última atualização: <span id="last-update"></span></small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração inicial
+        const deliveryToken = '<%= @delivery.public_token %>';
+        const apiBaseUrl = '/api/v1/public';
+        let map, courierMarker, routePolyline;
+        let cable, subscription;
+
+        // Inicializar mapa
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: { lat: -23.5505, lng: -46.6333 }, // São Paulo padrão
+                styles: [
+                    {
+                        featureType: 'poi',
+                        elementType: 'labels',
+                        stylers: [{ visibility: 'off' }]
+                    }
+                ]
+            });
+
+            // Carregar dados iniciais
+            loadTrackingData();
+
+            // Conectar WebSocket
+            connectWebSocket();
+        }
+
+        // Carregar dados de tracking
+        async function loadTrackingData() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/track/${deliveryToken}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    updateTrackingDisplay(data.data);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados de tracking:', error);
+            }
+        }
+
+        // Atualizar display com dados de tracking
+        function updateTrackingDisplay(trackingData) {
+            // Atualizar ETA
+            updateETADisplay(trackingData.eta, trackingData.status.progress);
+
+            // Atualizar timeline
+            updateTimeline(trackingData.timeline);
+
+            // Atualizar mapa
+            updateMap(trackingData);
+
+            // Atualizar info do courier
+            if (trackingData.courier) {
+                updateCourierInfo(trackingData.courier);
+            }
+        }
+
+        // Atualizar display de ETA
+        function updateETADisplay(eta, progress) {
+            const etaDisplay = document.getElementById('eta-display');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+
+            if (eta && eta.estimated_at) {
+                const arrivalTime = new Date(eta.estimated_at);
+                etaDisplay.innerHTML = `
+                    <strong>${arrivalTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</strong><br>
+                    <small>${eta.current_duration || 'Calculando...'}</small>
+                `;
+            } else {
+                etaDisplay.textContent = 'Calculando...';
+            }
+
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${progress}% concluído`;
+        }
+
+        // Atualizar timeline
+        function updateTimeline(timeline) {
+            const timelineContainer = document.getElementById('timeline');
+            timelineContainer.innerHTML = '';
+
+            timeline.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `timeline-item ${item.completed ? 'completed' : 'pending'}`;
+
+                const dotClass = item.completed ? 'completed' : 'pending';
+                div.innerHTML = `
+                    <div class="timeline-dot ${dotClass}"></div>
+                    <div>
+                        <strong>${item.description}</strong>
+                        ${item.timestamp ? `<br><small>${new Date(item.timestamp).toLocaleString('pt-BR')}</small>` : ''}
+                    </div>
+                `;
+
+                timelineContainer.appendChild(div);
+            });
+        }
+
+        // Atualizar mapa
+        function updateMap(trackingData) {
+            if (!map) return;
+
+            // Remover markers e rotas anteriores
+            if (courierMarker) courierMarker.setMap(null);
+            if (routePolyline) routePolyline.setMap(null);
+
+            const bounds = new google.maps.LatLngBounds();
+
+            // Adicionar marcadores de origem e destino
+            if (trackingData.route) {
+                if (trackingData.route.origin) {
+                    new google.maps.Marker({
+                        position: trackingData.route.origin,
+                        map: map,
+                        title: 'Loja',
+                        icon: {
+                            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                <svg fill="#3b82f6" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            `),
+                            scaledSize: new google.maps.Size(32, 32)
+                        }
+                    });
+                    bounds.extend(trackingData.route.origin);
+                }
+
+                if (trackingData.route.destination) {
+                    new google.maps.Marker({
+                        position: trackingData.route.destination,
+                        map: map,
+                        title: 'Destino',
+                        icon: {
+                            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                <svg fill="#10b981" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                            `),
+                            scaledSize: new google.maps.Size(32, 32)
+                        }
+                    });
+                    bounds.extend(trackingData.route.destination);
+                }
+
+                // Desenhar rota se disponível
+                if (trackingData.route.polyline) {
+                    const decodedPath = google.maps.geometry.encoding.decodePath(trackingData.route.polyline);
+                    routePolyline = new google.maps.Polyline({
+                        path: decodedPath,
+                        geodesic: true,
+                        strokeColor: '#3b82f6',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 4
+                    });
+                    routePolyline.setMap(map);
+                }
+            }
+
+            // Adicionar marcador do courier se disponível
+            if (trackingData.courier) {
+                const courierPosition = {
+                    lat: trackingData.courier.latitude,
+                    lng: trackingData.courier.longitude
+                };
+
+                courierMarker = new google.maps.Marker({
+                    position: courierPosition,
+                    map: map,
+                    title: `Entregador: ${trackingData.courier.courier_name}`,
+                    icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg fill="#f59e0b" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(40, 40)
+                    },
+                    animation: google.maps.Animation.BOUNCE
+                });
+
+                bounds.extend(courierPosition);
+            }
+
+            // Ajustar zoom para mostrar todos os marcadores
+            if (!bounds.isEmpty()) {
+                map.fitBounds(bounds);
+                if (map.getZoom() > 15) map.setZoom(15);
+            }
+        }
+
+        // Atualizar informações do courier
+        function updateCourierInfo(courierData) {
+            const courierInfo = document.getElementById('courier-info');
+            const courierName = document.getElementById('courier-name');
+            const lastUpdate = document.getElementById('last-update');
+
+            courierName.textContent = courierData.courier_name;
+            lastUpdate.textContent = new Date(courierData.last_update).toLocaleString('pt-BR');
+            courierInfo.style.display = 'block';
+        }
+
+        // Conectar WebSocket para atualizações em tempo real
+        function connectWebSocket() {
+            if (typeof ActionCable === 'undefined') {
+                console.log('ActionCable não disponível, usando polling...');
+                startPolling();
+                return;
+            }
+
+            cable = ActionCable.createConsumer('/cable');
+            subscription = cable.subscriptions.create(
+                {
+                    channel: 'TrackingChannel',
+                    delivery_token: deliveryToken
+                },
+                {
+                    connected() {
+                        console.log('Conectado ao tracking em tempo real');
+                    },
+
+                    disconnected() {
+                        console.log('Desconectado do tracking');
+                    },
+
+                    received(data) {
+                        console.log('Dados recebidos:', data);
+
+                        switch (data.type) {
+                            case 'initial_data':
+                            case 'refresh_data':
+                                updateTrackingDisplay(data.data);
+                                break;
+                            case 'location_update':
+                                updateCourierLocation(data.data);
+                                break;
+                            case 'status_update':
+                                updateStatus(data.data);
+                                break;
+                            case 'eta_updated':
+                                updateETADisplay(data.data.eta, data.data.progress);
+                                break;
+                        }
+                    }
+                }
+            );
+        }
+
+        // Fallback: polling se WebSocket não disponível
+        function startPolling() {
+            setInterval(loadTrackingData, 30000); // Atualizar a cada 30 segundos
+        }
+
+        // Atualizar apenas localização do courier
+        function updateCourierLocation(data) {
+            if (courierMarker && data.courier) {
+                const newPosition = {
+                    lat: data.courier.latitude,
+                    lng: data.courier.longitude
+                };
+                courierMarker.setPosition(newPosition);
+            }
+
+            if (data.eta) {
+                updateETADisplay(data.eta, data.progress);
+            }
+        }
+
+        // Atualizar status
+        function updateStatus(data) {
+            if (data.timeline) {
+                updateTimeline(data.timeline);
+            }
+
+            updateETADisplay(null, data.progress);
+        }
+
+        // Inicializar quando página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+        });
+
+        // Limpar conexões quando sair da página
+        window.addEventListener('beforeunload', function() {
+            if (subscription) {
+                subscription.unsubscribe();
+            }
+            if (cable) {
+                cable.disconnect();
+            }
+        });
+    </script>
 </body>
 </html>

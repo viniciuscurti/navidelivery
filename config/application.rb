@@ -17,8 +17,11 @@ module NaviDelivery
     # Time zone
     config.time_zone = 'America/Sao_Paulo'
 
-    # CORS atualizado para endpoints públicos de tracking e WebSocket
-    config.middleware.insert_before 0, Rack::Cors do
+    # Security - Rack::Attack middleware
+    config.middleware.use Rack::Attack
+
+    # CORS configuration for public tracking endpoints and WebSocket
+    config.middleware.use Rack::Cors do
       allow do
         origins '*'
         resource '/api/v1/deliveries/track/*', headers: :any, methods: [:get, :options]

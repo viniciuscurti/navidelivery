@@ -1,53 +1,36 @@
-# syntax = docker/dockerfile:1
+FROM ruby:3.3.6-alpine
 
-ARG RUBY_VERSION=3.3.6
+# Instalação de dependências essenciais
+RUN apk add --no-cache \
+    build-base \
+    postgresql-dev \
+    git \
+    tzdata \
+    bash \
+    vips-dev \
+    geos-dev \
+    proj-dev \
+    netcat-openbsd
 
-ARG PRECOMPILE_ASSETS=false
-# Stage de build (instala dependências de compilação)
-FROM ruby:${RUBY_VERSION}-alpine AS build
-
-ARG PRECOMPILE_ASSETS
-ARG PRECOMPILE_ASSETS=false
-ENV RAILS_ENV=production \
+# Configuração do ambiente
+ENV RAILS_ENV=development \
     BUNDLE_PATH=/usr/local/bundle \
-    BUNDLE_JOBS=4 \
-RUN apk add --no-cache build-base git postgresql-dev vips-dev geos-dev proj-dev tzdata \
-  && gem update --system --no-document
+    BUNDLE_JOBS=4
 
-WORKDIR /rails
+WORKDIR /app
 
+# Copiar Gemfile primeiro para aproveitar cache do Docker
 COPY Gemfile Gemfile.lock ./
-RUN bundle install --no-cache
+RUN bundle install
 
-# Copia código
+# Copiar resto da aplicação
 COPY . .
 
-# Precompile bootsnap
-RUN bundle exec bootsnap precompile app/ lib/ || true
-
-# Precompile assets opcional (evita quebrar build em dev)
-RUN if [ "$PRECOMPILE_ASSETS" = "true" ]; then \
-    DISABLE_DB=1 SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile; \
-  fi
-    BUNDLE_WITHOUT="development test" \
-    TZ=UTC
-
-# Dependências runtime (sem -dev)
-RUN apk add --no-cache postgresql-client vips geos proj tzdata bash libstdc++ \
-  && adduser -D -h /rails rails
-
-WORKDIR /rails
-
-# Copia gems e app do stage build
-COPY --from=build /usr/local/bundle /usr/local/bundle
-COPY --from=build /rails /rails
-
-# Permissões
-RUN chown -R rails:rails /rails
-USER rails
+# Script de entrada para desenvolvimento
+COPY bin/docker-entrypoint /usr/bin/
+RUN chmod +x /usr/bin/docker-entrypoint
 
 EXPOSE 3000
 
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
-
+CMD ["rails", "server", "-b", "0.0.0.0"]
+ENTRYPOINT ["docker-entrypoint"]
