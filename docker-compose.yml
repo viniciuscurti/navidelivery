@@ -16,7 +16,7 @@ services:
       - POSTGRES_HOST=db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - GOOGLE_MAPS_API_KEY=AIzaSyByjkXmCxPtOEbVPKf6QpgSVVVB5h1dNDM
+      - GOOGLE_MAPS_API_KEY=
     depends_on:
       - db
       - redis
